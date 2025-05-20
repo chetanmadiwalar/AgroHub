@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import dotenv from 'dotenv';
 import { Provider } from 'react-redux'
+import { BrowserRouter } from 'react-router-dom';
+
 
 import store from './store';
 import './bootstrap.min.css';
@@ -12,7 +14,9 @@ dotenv.config('./../.env');
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </Provider>,
   document.getElementById('root')
 );
