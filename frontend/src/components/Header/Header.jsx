@@ -4,6 +4,7 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { Nav, Navbar, NavDropdown, Image } from 'react-bootstrap';
 import styled, { keyframes, css } from 'styled-components';
 import { logout } from './../../actions/userActions';
+import { useLocation } from 'react-router-dom';
 
 // Animations
 const fadeIn = keyframes`
@@ -28,7 +29,7 @@ const gradientBG = keyframes`
   100% { background-position: 0% 50%; }
 `;
 
-// Styled Components (unchanged)
+// Styled Components
 const StyledNavbar = styled(Navbar)`
   background: linear-gradient(135deg, #1a1a40, #4b0082);
   background-size: 200% 200%;
@@ -84,8 +85,8 @@ const StyledNavDropdown = styled(NavDropdown)`
     transition: all 0.3s ease;
     padding: 8px 15px;
     border-radius: 4px;
-    min-width: 120px;
-    text-align: center;
+    min-width: 120px; /* Set minimum width for the toggle */
+    text-align: center; /* Center the text */
 
     &:hover {
       background: rgba(255, 255, 255, 0.1);
@@ -100,20 +101,20 @@ const StyledNavDropdown = styled(NavDropdown)`
     overflow: hidden;
     animation: ${slideInRight} 0.3s ease-out;
     margin-top: 5px;
-    min-width: 150px !important;
-    width: 150px !important;
-    right: 0 !important;
-    left: auto !important;
+    min-width: 150px !important; /* Set fixed width */
+    width: 150px !important; /* Ensure width is fixed */
+    right: 0 !important; /* Align to right */
+    left: auto !important; /* Override default left positioning */
   }
 
   .dropdown-item {
     color: white !important;
-    padding: 10px 20px;
+    padding: 10px 20px; /* Slightly reduced padding */
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: nowrap; /* Prevent text wrapping */
+    text-overflow: ellipsis; /* Add ellipsis if text is too long */
 
     &:hover {
       background: rgba(255, 255, 255, 0.1) !important;
@@ -149,92 +150,135 @@ const LogoImage = styled(Image)`
   margin-left: 20px;
 `;
 
+
 const Header = () => {
-  const dispatch = useDispatch();
-  const userLogin = useSelector(state => state.userLogin);
-  const { userInfo } = userLogin;
+    const dispatch = useDispatch();
+    const userLogin = useSelector(state => state.userLogin);
+    const { userInfo } = userLogin;
+    const location = useLocation();
 
-  const logoutHandler = () => {
-    dispatch(logout());
-  };
+    const logoutHandler = () => {
+        dispatch(logout());
+    };
 
-  const scrollToSection = () => {
-    const section = document.getElementById("scroll");
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+    const scrollToSection = () => {
+        const section = document.getElementById("scroll");
+        if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+    const isHomePage = location.pathname === '/';
 
-  const isHomePage = window.location.pathname === '/';
-
-  return (
-    <StyledNavbar collapseOnSelect expand="lg" fixed="top">
-      <LinkContainer to="/">
-        <Navbar.Brand>
-          <LogoImage src="/Logo.png" />
-        </Navbar.Brand>
-      </LinkContainer>
-      <Navbar.Toggle aria-controls="basic-navbar-nav" style={{ borderColor: 'rgba(255,255,255,0.5)' }} />
-      <Navbar.Collapse id="basic-navbar-nav">
-        <Nav className="ml-auto" style={{ alignItems: 'center', marginRight: '10px' }}>
-          {userInfo ? (
-            <>
-              {userInfo.role === 'Farmer' && (
-                <>
-                  <LinkContainer to='/farmers/dashboard'><NavLink>DASHBOARD</NavLink></LinkContainer>
-                  <LinkContainer to='/farmers/products'><NavLink>MY PRODUCTS</NavLink></LinkContainer>
-                  <LinkContainer to='/farmers/purchaseSeeds'><NavLink>BUY PRODUCTS</NavLink></LinkContainer>
-                  <LinkContainer to='/farmers/lendMachines'><NavLink>LEND MACHINES</NavLink></LinkContainer>
-                  <LinkContainer to='/cart'><NavLink>CART</NavLink></LinkContainer>
-                  <LinkContainer to='/myOrders'><NavLink>MY ORDERS</NavLink></LinkContainer>
-                </>
-              )}
-              {userInfo.role === 'Consumer' && (
-                <>
-                  <LinkContainer to='/consumer'><NavLink>HOME</NavLink></LinkContainer>
-                  <LinkContainer to='/cart'><NavLink>CART</NavLink></LinkContainer>
-                  <LinkContainer to='/myOrders'><NavLink>MY ORDERS</NavLink></LinkContainer>
-                </>
-              )}
-              {userInfo.role === 'Supplier' && (
-                <>
-                  <LinkContainer to='/supplier/dashboard'><NavLink>DASHBOARD</NavLink></LinkContainer>
-                  <LinkContainer to='/supplier/myproducts'><NavLink>MY PRODUCTS</NavLink></LinkContainer>
-                  <LinkContainer to='/supplier/mymachines'><NavLink>MY MACHINES</NavLink></LinkContainer>
-                </>
-              )}
-              <StyledNavDropdown title={(userInfo.name || 'USER').toUpperCase()} id='username'>
-                {userInfo.isAdmin && (
-                  <>
-                    <LinkContainer to='/admin/dashboard'>
-                      <NavDropdown.Item><i className="fas fa-tachometer-alt mr-2"></i> DASHBOARD</NavDropdown.Item>
-                    </LinkContainer>
-                    <NavDropdown.Divider />
-                  </>
-                )}
-                <LinkContainer to='/profile'>
-                  <NavDropdown.Item><i className="fas fa-user-circle mr-2"></i> PROFILE</NavDropdown.Item>
-                </LinkContainer>
-                <NavDropdown.Divider />
-                <LinkContainer to='/login'>
-                  <NavDropdown.Item onClick={logoutHandler}><i className="fas fa-sign-out-alt mr-2"></i> LOGOUT</NavDropdown.Item>
-                </LinkContainer>
-              </StyledNavDropdown>
-            </>
-          ) : (
-            <>
-              <LinkContainer to="/"><NavLink>HOME</NavLink></LinkContainer>
-              <LinkContainer to="login?redirect=farmer"><NavLink>FARMER</NavLink></LinkContainer>
-              <LinkContainer to="login?redirect=consumer"><NavLink>CONSUMER</NavLink></LinkContainer>
-              <LinkContainer to="login?redirect=supplier"><NavLink>SUPPLIER</NavLink></LinkContainer>
-              <LinkContainer to="/login?redirect=admin"><NavLink>ADMIN</NavLink></LinkContainer>
-              {isHomePage && <NavLink onClick={scrollToSection}>REGISTER</NavLink>}
-            </>
-          )}
-        </Nav>
-      </Navbar.Collapse>
-    </StyledNavbar>
-  );
+    return (
+        <StyledNavbar collapseOnSelect expand="lg" fixed="top">
+            <LinkContainer to="/">
+                <Navbar.Brand>
+                    <LogoImage src="/Logo.png" />
+                </Navbar.Brand>
+            </LinkContainer>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" style={{ borderColor: 'rgba(255,255,255,0.5)' }} />
+            <Navbar.Collapse id="basic-navbar-nav">
+                <Nav className="ml-auto" style={{ alignItems: 'center',marginRight :'10px'}}>
+                    {userInfo ? (
+                        <>
+                            {userInfo && userInfo.role === 'Farmer' && (
+                                <>
+                                    <LinkContainer to='/farmers/dashboard'>
+                                        <NavLink>DASHBOARD</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/farmers/products'>
+                                        <NavLink>MY PRODUCTS</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/farmers/purchaseSeeds'>
+                                        <NavLink>BUY PRODUCTS</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/farmers/lendMachines'>
+                                        <NavLink>LEND MACHINES</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/cart'>
+                                        <NavLink>CART</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/myOrders'>
+                                        <NavLink>MY ORDERS</NavLink>
+                                    </LinkContainer>
+                                </>
+                            )}
+                            {userInfo && userInfo.role === 'Consumer' && (
+                                <>
+                                    <LinkContainer to='/consumer'>
+                                        <NavLink>HOME</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/cart'>
+                                        <NavLink>CART</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/myOrders'>
+                                        <NavLink>MY ORDERS</NavLink>
+                                    </LinkContainer>
+                                </>
+                            )}
+                            {userInfo && userInfo.role === 'Supplier' && (
+                                <>
+                                    <LinkContainer to='/supplier/dashboard'>
+                                        <NavLink>DASHBOARD</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/supplier/myproducts'>
+                                        <NavLink>MY PRODUCTS</NavLink>
+                                    </LinkContainer>
+                                    <LinkContainer to='/supplier/mymachines'>
+                                        <NavLink>MY MACHINES</NavLink>
+                                    </LinkContainer>
+                                </>
+                            )}
+                            <StyledNavDropdown title={(userInfo.name || 'USER').toUpperCase()} id='username'>
+                                {userInfo && userInfo.isAdmin && (
+                                    <>
+                                        <LinkContainer to='/admin/dashboard'>
+                                            <NavDropdown.Item>
+                                                <i className="fas fa-tachometer-alt mr-2"></i> DASHBOARD
+                                            </NavDropdown.Item>
+                                        </LinkContainer>
+                                        <NavDropdown.Divider />
+                                    </>
+                                )}
+                                <LinkContainer to='/profile'>
+                                    <NavDropdown.Item>
+                                        <i className="fas fa-user-circle mr-2"></i> PROFILE
+                                    </NavDropdown.Item>
+                                </LinkContainer>
+                                <NavDropdown.Divider />
+                                <LinkContainer to='/login'>
+                                    <NavDropdown.Item onClick={logoutHandler}>
+                                        <i className="fas fa-sign-out-alt mr-2"></i> LOGOUT
+                                    </NavDropdown.Item>
+                                </LinkContainer>
+                            </StyledNavDropdown>
+                        </>
+                    ) : (
+                        <>
+                            <LinkContainer to="/">
+                                <NavLink>HOME</NavLink>
+                            </LinkContainer>
+                            <LinkContainer to="login?redirect=farmer">
+                                <NavLink>FARMER</NavLink>
+                            </LinkContainer>
+                            <LinkContainer to="login?redirect=consumer">
+                                <NavLink>CONSUMER</NavLink>
+                            </LinkContainer>
+                            <LinkContainer to="login?redirect=supplier">
+                                <NavLink>SUPPLIER</NavLink>
+                            </LinkContainer>
+                            <LinkContainer to="/login?redirect=admin">
+                                <NavLink>ADMIN</NavLink>
+                            </LinkContainer>
+                                {isHomePage && (
+                                    <NavLink onClick={scrollToSection}>REGISTER</NavLink>
+                                )}
+                        </>
+                    )}
+                </Nav>
+            </Navbar.Collapse>
+        </StyledNavbar>
+    );
 };
 
 export default Header;
