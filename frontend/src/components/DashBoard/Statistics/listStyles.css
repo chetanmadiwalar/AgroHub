@@ -1,0 +1,84 @@
+/* Centered section heading */
+.pord-heading {
+  text-align: center !important;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* Chart row spacing */
+.list-container {
+  margin-top: -10px !important;
+  padding: 0 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* Chart wrappers (optional, to wrap individual charts) */
+.chart-wrapper {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+/* Tablet view (768px - 991px) */
+@media (max-width: 991px) {
+  .pord-heading {
+    font-size: 1.75rem;
+  }
+
+  .list-container {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .chart-wrapper {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+}
+
+/* Mobile landscape/small tablets (576px - 767px) */
+@media (max-width: 767px) {
+  .pord-heading {
+    font-size: 1.5rem;
+  }
+
+  .list-container {
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 0 0.75rem;
+  }
+
+  .chart-wrapper {
+    padding: 0.9rem;
+  }
+}
+
+/* Phones (up to 575px) */
+@media (max-width: 575px) {
+  .pord-heading {
+    font-size: 1.25rem;
+  }
+
+  .chart-wrapper {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+}
+
+/* Ultra small devices (up to 375px) */
+@media (max-width: 375px) {
+  .pord-heading {
+    font-size: 1.1rem;
+  }
+
+  .chart-wrapper {
+    padding: 0.6rem;
+  }
+}
