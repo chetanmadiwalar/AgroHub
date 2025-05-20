@@ -41,7 +41,7 @@ import SupplierMyMachines from './screens/SupplierMyMachines/SupplierMymachines.
 const Layout = () => {
     return (
         <>
-            <Router>
+            
                 <Header />
                 <Switch>
                     <Route exact path="/" component={HomeScreen} />
@@ -85,7 +85,7 @@ const Layout = () => {
                     <Route exact path="/myOrders" component={MyOrdersScreen} />
                 </Switch>
                 <Footer />
-            </Router>
+
         </>
     )
 }
