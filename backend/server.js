@@ -26,7 +26,7 @@ app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow frontend access
+    origin: ['http://localhost:3000','https://chetanagrohub.netlify.app'], // Allow frontend access
     methods: 'GET,POST,PUT,DELETE',
     allowedHeaders: 'Content-Type, Authorization'
 }));
