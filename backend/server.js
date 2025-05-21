@@ -69,4 +69,4 @@ const PORT = process.env.PORT || 5000;
 //     console.log(`Server running ${process.env.NODE_ENV} on port ${PORT}`.yellow.bold)
 // );
 
-module.exports = app;
+export default app;
