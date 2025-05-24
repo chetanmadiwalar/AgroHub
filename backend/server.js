@@ -62,7 +62,7 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   app.get('/', (req, res) => res.send('API is running'));
 }
-
+app.get('/', (req, res) => res.send('API is running'));
 // Error Handlers
 app.use(notFound);
 app.use(errorHandler);
