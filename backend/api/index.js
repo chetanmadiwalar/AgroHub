@@ -1,5 +1,5 @@
 // api/index.js
 import serverless from 'serverless-http';
-import app from '../backend/server.js';
+import app from '../server.js';
 
 export default serverless(app);
