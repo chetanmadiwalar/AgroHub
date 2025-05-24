@@ -1,72 +1,76 @@
-import path from 'path'
 import express from 'express';
-import dotenv from 'dotenv';
-import morgan from 'morgan'
-import connectDB from './config/db.js';
-import colors from 'colors'
 import cors from 'cors';
-import { notFound, errorHandler } from './middleware/errorMiddlware.js'
-import productRoutes from './routes/productRoutes.js'
-import userRoutes from './routes/userRoutes.js'
-import orderRoutes from './routes/orderRoutes.js'
-import uploadRoutes from './routes/uploadRoutes.js'
-import supplierRoutes from './routes/supplierRoutes.js'
+import dotenv from 'dotenv';
+import morgan from 'morgan';
+import path from 'path';
+import { readdirSync } from 'fs';
+import connectDB from './config/db.js';
+import colors from 'colors';
+import { notFound, errorHandler } from './middleware/errorMiddlware.js';
+import { pathToFileURL } from 'url';
 
-dotenv.config('./../.env');
-
-connectDB();
+dotenv.config();
 
 const app = express();
 
-if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'))
-}
+// Connect to DB
+connectDB();
 
+// Middlewares
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
 app.use(cors({
-    origin: ['http://localhost:3000','https://chetanagrohub.netlify.app'], // Allow frontend access
-    methods: 'GET,POST,PUT,DELETE',
-    allowedHeaders: 'Content-Type, Authorization'
+  origin: [
+    'http://localhost:3000',
+    'https://chetanagrohub.netlify.app'
+  ],
+  methods: 'GET,POST,PUT,DELETE',
+  allowedHeaders: 'Content-Type, Authorization'
 }));
-app.use('/api', productRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/supplier', supplierRoutes);
 
-// PAYPAL 
-app.get('/api/config/paypal', (req, res) => res.send(process.env.PAYPAL_CLIENT_ID))
+// Dynamic route loading
+const routesDir = path.join(path.resolve(), './routes');
+const routeFiles = readdirSync(routesDir);
 
-const __dirname = path.resolve()
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')))
+for (const route of routeFiles) {
+  const routePath = path.join(routesDir, route);
+  const routeModule = await import(pathToFileURL(routePath).href);
+  app.use('/api/v1', routeModule.default);
+}
+
+// Static file serving
+const __dirname = path.resolve();
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use('/img', express.static(path.join(process.cwd(), 'public', 'img')));
 
+// Paypal config
+app.get('/api/config/paypal', (req, res) => res.send(process.env.PAYPAL_CLIENT_ID));
+
+// Root route
 app.get('/', (req, res) => {
-        res.send("API is running");
-    })
+  res.send({
+    activeStatus: true,
+    error: false,
+  });
+});
 
-
-// if (process.env.NODE_ENV === 'production') {
-//     app.use(express.static(path.join(__dirname, '/frontend/build')))
-
-//     app.get('*', (req, res) =>
-//         res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html')))
-// } else {
-//     app.get('/', (req, res) => {
-//         res.send("API is running");
-//     })
-// }
-
-app.use(notFound)
-app.use(errorHandler)
+// Error handlers
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// app.listen(
-//     PORT,
-//     console.log(`Server running ${process.env.NODE_ENV} on port ${PORT}`.yellow.bold)
-// );
-
+// For serverless deployment (e.g., Vercel)
 export default app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(
+    PORT,
+    () => console.log(`Server running ${process.env.NODE_ENV} on port ${PORT}`.yellow.bold)
+  );
+}
