@@ -8,7 +8,7 @@ import {
 
 export const addToCart = (id, qty, userId) => async (dispatch, getState) => {
     try {
-        const { data } = await axios.get(`/api/seeds/${id}`);
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/seeds/${id}`);
         dispatch({
             type: CART_ADD_ITEM,
             payload: {
@@ -23,7 +23,7 @@ export const addToCart = (id, qty, userId) => async (dispatch, getState) => {
         });
     } catch (error) {
         try {
-            const { data } = await axios.get(`/api/lendMachines/${id}`)
+            const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/lendMachines/${id}`)
             dispatch({
                 type: CART_ADD_ITEM,
                 payload: {
@@ -37,7 +37,7 @@ export const addToCart = (id, qty, userId) => async (dispatch, getState) => {
                 }
             })
         } catch (error) { 
-            const { data } = await axios.get(`/api/consumer/${id}`)
+            const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/consumer/${id}`)
             dispatch({
                 type: CART_ADD_ITEM,
                 payload: {

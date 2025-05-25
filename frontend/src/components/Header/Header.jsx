@@ -229,7 +229,7 @@ const Header = () => {
                                     </LinkContainer>
                                 </>
                             )}
-                            <StyledNavDropdown title={(userInfo.name || 'USER').toUpperCase()} id='username'>
+                            <StyledNavDropdown title={userInfo.name.toUpperCase()} id='username'>
                                 {userInfo && userInfo.isAdmin && (
                                     <>
                                         <LinkContainer to='/admin/dashboard'>

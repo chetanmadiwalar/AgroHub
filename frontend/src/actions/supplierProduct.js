@@ -46,7 +46,7 @@ export const createSupplierProduct = ({
         }
 
         const { data } = await axios.post(
-            '/api/supplier',
+            'https://agrohub-backend.vercel.app/api/supplier',
             {
             name,
             price,
@@ -89,7 +89,7 @@ export const listMyProducts = () => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.get(`/api/supplier/myproducts`, config)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/supplier/myproducts`, config)
 
         dispatch({
             type: SUPPLIER_PRODUCT_LIST_MY_SUCCESS,
@@ -126,7 +126,7 @@ export const listSupplierProducts = () => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.get(`/api/supplier`, config)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/supplier`, config)
 
         dispatch({
             type: SUPPLIER_PRODUCT_LIST_SUCCESS,
@@ -161,7 +161,7 @@ export const getroductsDetails = (id) => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.get(`/api/supplier/product/${id}`, config)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/supplier/product/${id}`, config)
 
         dispatch({
             type: SUPPLIER_PRODUCT_SUCCESS,
@@ -198,7 +198,7 @@ export const createProductReview = (productId, review) => async (
             },
         }
 
-        await axios.post(`/api/supplier/product/${productId}/reviews`, review, config)
+        await axios.post(`https://agrohub-backend.vercel.app/api/supplier/product/${productId}/reviews`, review, config)
 
         dispatch({
             type: FARMER_PRODUCT_CREATE_REVIEW_SUCCESS,
@@ -233,7 +233,7 @@ export const updateReviewed = (product) => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.put(`/api/supplier/product/${product._id}/reviews`, product, config)
+        const { data } = await axios.put(`https://agrohub-backend.vercel.app/api/supplier/product/${product._id}/reviews`, product, config)
 
         dispatch({ type: FARMER_PRODUCT_CREATE_REVIEW_SUCCESS })
 
@@ -268,7 +268,7 @@ export const updateSupplierProduct = (product) => async (dispatch, getState) => 
             },
         }
 
-        const { data } = await axios.put(`/api/supplier/product/${product._id}/edit`, product, config)
+        const { data } = await axios.put(`https://agrohub-backend.vercel.app/api/supplier/product/${product._id}/edit`, product, config)
 
         dispatch({
             type: SUPPLIER_PRODUCT_UPDATE_SUCCESS,
@@ -293,7 +293,7 @@ export const listSupplierProductsForAll = () => async (dispatch) => {
             type: SUPPLIER_PRODUCT_FOR_ALL_REQUEST,
         })
 
-        const { data } = await axios.get(`/api/supplier/all`)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/supplier/all`)
 
         dispatch({
             type: SUPPLIER_PRODUCT_FOR_ALL_SUCCESS,

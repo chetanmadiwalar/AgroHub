@@ -37,7 +37,7 @@ export const createOrder = (order) => async (dispatch, getState) => {
         }
 
         const { data } = await axios.post(
-            '/api/orders',
+            'https://agrohub-backend.vercel.app/api/orders',
             order,
             config
         )
@@ -73,7 +73,7 @@ export const getOrderDetails = (id) => async (dispatch, getState) => {
         }
 
         const { data } = await axios.get(
-            `/api/orders/${id}`,
+            `https://agrohub-backend.vercel.app/api/orders/${id}`,
             config
         )
 
@@ -112,7 +112,7 @@ export const deliverOrder = (order) => async (dispatch, getState) => {
         }
 
         const { data } = await axios.put(
-            `/api/orders/${order._id}/deliver`,
+            `https://agrohub-backend.vercel.app/api/orders/${order._id}/deliver`,
             {},
             config
         )
@@ -153,7 +153,7 @@ export const payOrder = (orderId, paymentResult) => async (dispatch, getState) =
         }
 
         const { data } = await axios.put(
-            `/api/orders/${orderId}/pay`,
+            `https://agrohub-backend.vercel.app/api/orders/${orderId}/pay`,
             paymentResult,
             config
         )
@@ -194,7 +194,7 @@ export const listMyOrders = () => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.get(`/api/orders/myorders`, config)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/orders/myorders`, config)
 
         dispatch({
             type: ORDER_LIST_MY_SAVE,
@@ -231,7 +231,7 @@ export const listOrders = () => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.get(`/api/orders`, config)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/orders`, config)
 
         dispatch({
             type: ORDER_LIST_SAVE,

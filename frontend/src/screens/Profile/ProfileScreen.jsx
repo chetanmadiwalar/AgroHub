@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Form,
@@ -7,6 +8,7 @@ import {
     Container,
     Alert
 } from 'react-bootstrap';
+import axios from 'axios';
 import { Scrollbar } from "react-scrollbars-custom";
 import { useDispatch, useSelector } from 'react-redux';
 import { FaUserCircle, FaKey, FaInfoCircle, FaCheckCircle, FaCamera, FaUpload } from 'react-icons/fa';
@@ -23,12 +25,17 @@ const ProfileScreen = ({ history }) => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState({ variant: '', text: '' });
     const [showPasswordHelp, setShowPasswordHelp] = useState(false);
-    const [profileImage, setProfileImage] = useState(null);
+    const [profileImage, setProfileImage] = useState({
+    file: null,
+    url: ''
+    });
     const [previewImage, setPreviewImage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef(null);
     const [address, setAddress] = useState('');
     const [phonenumber, setPhonenumber] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const dispatch = useDispatch();
 
@@ -37,50 +44,121 @@ const ProfileScreen = ({ history }) => {
 
     const userLogin = useSelector(state => state.userLogin);
     const { userInfo } = userLogin;
-    console.log(userInfo);
-    console.log(userDetails);
-
 
     const userUpdateProfile = useSelector(state => state.userUpdateProfile);
     const { success } = userUpdateProfile;
 
     useEffect(() => {
-    const unlisten = history.listen(() => {
-        if (history.location.pathname === '/profile') {
+        if (!userInfo) {
+            history.push('/login');
+        } else {
             dispatch(getUserDetails('profile'));
         }
-    });
-    return () => unlisten();
-}, [dispatch, history]);
+    }, [dispatch, history, userInfo, success]);
 
     useEffect(() => {
-    if (!userInfo) {
-        history.push('/login');
-    } else {
-        if (!user.name || (success && user._id === userInfo._id)) {
-            dispatch(getUserDetails('profile'));
-        } else {
-            setName(user.name);
-            setEmail(user.email);
-            setRole(user.role);
-            if (user.image) {
-                setPreviewImage(user.image);
-            }
-            setAddress(user.address);
-            setPhonenumber(user.phonenumber);
+        if (user && user._id) {
+            setName(user.name || '');
+            setEmail(user.email || '');
+            setRole(user.role || '');
+            setPreviewImage(user.image || '');
+            setAddress(user.address || '');
+            setPhonenumber(user.phonenumber || '');
         }
-    }
-}, [dispatch, history, userInfo, user.name, user._id, user.image, user.role, success]);
+    }, [user]);
 
-useEffect(() => {
-    return () => {
-        // Reset the update success state when component unmounts
-        dispatch({ type: 'USER_UPDATE_PROFILE_RESET' });
+    useEffect(() => {
+        return () => {
+            dispatch({ type: 'USER_UPDATE_PROFILE_RESET' });
+            // Cleanup object URLs
+            if (previewImage && previewImage.startsWith('blob:')) {
+                URL.revokeObjectURL(previewImage);
+            }
+        };
+    }, [dispatch, previewImage]);
+
+    const triggerFileInput = () => {
+        try {
+            if (fileInputRef.current) {
+                fileInputRef.current.click();
+            } else {
+                // Fallback method if ref fails
+                const fileInput = document.getElementById('profile-image-upload');
+                if (fileInput) {
+                    fileInput.click();
+                } else {
+                    console.error("File input element not found");
+                    setMessage({ variant: 'danger', text: 'Unable to access file upload. Please try again.' });
+                }
+            }
+        } catch (error) {
+            console.error("Error triggering file input:", error);
+            setMessage({ variant: 'danger', text: 'An error occurred while trying to upload an image.' });
+        }
     };
-}, [dispatch]);
 
+    const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-const submitHandler = async (e) => {
+    setMessage({ text: '', variant: '' });
+    setUploadProgress(0);
+
+    if (!file.type.startsWith('image/')) {
+        setMessage({ variant: 'danger', text: 'Please select an image file (JPEG, PNG, etc.)' });
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        setMessage({ variant: 'danger', text: 'Image must be less than 2MB' });
+        return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setPreviewImage(previewUrl);
+    setUploading(true);
+
+    try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('upload_preset', 'agrohub_preset');
+
+        const { data } = await axios.post(
+            'https://api.cloudinary.com/v1_1/djfpd3gha/image/upload',
+            uploadFormData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                onUploadProgress: (progressEvent) => {
+                    const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setUploadProgress(progress);
+                }
+            }
+        );
+
+        if (data.secure_url) {
+            setProfileImage({
+                file: file,
+                url: data.secure_url
+            });
+            setMessage({ variant: 'success', text: 'Image uploaded successfully!' });
+        } else {
+            throw new Error('Upload failed - no secure URL returned');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        setMessage({ 
+            variant: 'danger', 
+            text: error.response?.data?.message || 'Failed to upload image. Please try again.' 
+        });
+        setPreviewImage(user?.image || '');
+    } finally {
+        setUploading(false);
+    }
+};
+
+    const submitHandler = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setMessage({ text: '', variant: '' });
@@ -90,68 +168,47 @@ const submitHandler = async (e) => {
             throw new Error('Passwords do not match');
         }
 
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('email', email);
-        formData.append('role', role.charAt(0).toUpperCase() + role.slice(1).toLowerCase());
-        formData.append('address', address);
-        formData.append('phonenumber', phonenumber);
+        // Prepare the data object
+        const userData = {
+            name,
+            email,
+            role,
+            address,
+            phonenumber,
+        };
 
-        if (password) formData.append('password', password);
-        if (profileImage instanceof File) formData.append('image', profileImage);
-
-        // Remove .unwrap() and handle the promise directly
-        await dispatch(updateUserProfile(formData));
+        if (password) userData.password = password;
         
-        // Reset form states on success
+        // Include the image URL if available
+        if (profileImage?.url) {
+            userData.image = profileImage.url;
+        } else if (user?.image) {
+            // Keep existing image if no new one was uploaded
+            userData.image = user.image;
+        }
+
+        console.log('Submitting user data:', userData);
+
+        // Dispatch the update action
+        await dispatch(updateUserProfile(userData));
+        
+        // Refresh user data
+        await dispatch(getUserDetails('profile'));
+        
+        setMessage({ variant: 'success', text: 'Profile updated successfully!' });
         setPassword('');
         setConfirmPassword('');
-        setProfileImage(null);
         
-        // Show success message
-        setMessage({ variant: 'success', text: 'Profile updated successfully!' });
     } catch (error) {
+        console.error('Profile update error:', error);
         setMessage({ 
             variant: 'danger', 
-            text: error.message || 'Profile update failed' 
+            text: error.message || 'Profile update failed. Please try again.' 
         });
     } finally {
         setIsSubmitting(false);
     }
 };
-      
-      
-
-    const handleImageChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-          const file = e.target.files[0];
-          
-          // Validate file type
-          if (!file.type.startsWith('image/')) {
-            setMessage({ variant: 'danger', text: 'Please select an image file' });
-            return;
-          }
-          
-          // Validate file size (e.g., 2MB max)
-          if (file.size > 2 * 1024 * 1024) {
-            setMessage({ variant: 'danger', text: 'Image must be less than 2MB' });
-            return;
-          }
-          
-          setProfileImage(file);
-          
-          // Create preview
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            setPreviewImage(reader.result);
-          };
-          reader.readAsDataURL(file);
-        }
-      };
-
-    const triggerFileInput = () => {
-        fileInputRef.current.click();
-    };
 
     const passwordRequirements = [
         'At least 8 characters',
@@ -292,6 +349,11 @@ const submitHandler = async (e) => {
                     justify-content: center;
                     opacity: 0;
                     transition: opacity 0.3s ease;
+                }
+
+                .upload-overlay .spinner-border {
+                    width: 2rem;
+                    height: 2rem;
                 }
                 
                 .upload-overlay span {
@@ -563,6 +625,22 @@ const submitHandler = async (e) => {
                     flex-grow: 1;
                     color: #495057;
                 }
+
+                .upload-progress {
+                    width: 100%;
+                    height: 5px;
+                    background: #e9ecef;
+                    border-radius: 5px;
+                    margin-top: 0.5rem;
+                    overflow: hidden;
+                }
+                
+                .upload-progress-bar {
+                    height: 100%;
+                    background: linear-gradient(to right, #3498db, #2c3e50);
+                    width: ${uploadProgress}%;
+                    transition: width 0.3s ease;
+                }
             `}</style>
 
             {message.text && (
@@ -578,40 +656,55 @@ const submitHandler = async (e) => {
                                 <div className="card-body p-4 p-md-5">
                                     <Row>
                                         <Col md={5} className="pr-md-4">
-                                            <div className="profile-header mb-4">
-                                                <div 
-                                                    className="profile-image-container"
-                                                    onClick={triggerFileInput}
-                                                >
-                                                    {previewImage ? (
-                                                        <img 
-                                                            src={previewImage} 
-                                                            alt="Profile" 
-                                                            className="profile-image"
-                                                        />
-                                                    ) : (
-                                                        <FaUserCircle className="profile-icon" />
-                                                    )}
+                                            <div className="profile-image-container" onClick={triggerFileInput}>
+                                                {previewImage ? (
+                                                    <img 
+                                                        src={previewImage} 
+                                                        alt="Profile" 
+                                                        className="profile-image"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = '';
+                                                            setPreviewImage('');
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <FaUserCircle className="profile-icon" />
+                                                )}
+                                                
+                                                {uploading && (
+                                                    <div className="upload-overlay" style={{ opacity: 1 }}>
+                                                        <div className="spinner-border text-light" role="status">
+                                                            <span className="visually-hidden">Loading...</span>
+                                                        </div>
+                                                        <div className="upload-progress mt-2">
+                                                            <div className="upload-progress-bar"></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                
+                                                {!uploading && (
                                                     <div className="upload-overlay">
                                                         <FaCamera className="camera-icon" />
                                                         <span>Change Photo</span>
                                                     </div>
-                                                </div>
-                                                <input
-                                                    type="file"
-                                                    ref={fileInputRef}
-                                                    onChange={handleImageChange}
-                                                    accept="image/*"
-                                                    style={{ display: 'none' }}
-                                                />
-                                                <h2 className="profile-title">{name || 'User Profile'}</h2>
-                                                <p className="profile-role">{role || 'Member'}</p>
+                                                )}
                                             </div>
+
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                id="profile-image-upload"
+                                                onChange={handleImageChange}
+                                                accept="image/*"
+                                                style={{ display: 'none' }}
+                                            />
 
                                             {loading ? (
                                                 <Loader />
                                             ) : (
                                                 <form onSubmit={submitHandler} className="profile-form">
+                                                    {/* Your existing form groups remain the same */}
                                                     <Form.Group controlId='name' className="mb-3 form-group-animate">
                                                         <Form.Label>Name <span className="text-danger">*</span></Form.Label>
                                                         <Form.Control

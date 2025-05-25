@@ -25,7 +25,7 @@ export const listConsumerProducts = () => async (dispatch) => {
     try {
         dispatch({ type: CONSUMER_PRODUCT_LIST_REQUEST })
 
-        const { data } = await axios.get('/api/consumer')
+        const { data } = await axios.get('https://agrohub-backend.vercel.app/api/consumer')
 
         dispatch({
             type: CONSUMER_PRODUCT_LIST_SUCCESS,
@@ -46,7 +46,7 @@ export const listConsumerProductsDetails = (id) => async (dispatch) => {
     try {
         dispatch({ type: CONSUMER_PRODUCT_DETAILS_REQUEST })
 
-        const { data } = await axios.get(`/api/consumer/${id}`)
+        const { data } = await axios.get(`https://agrohub-backend.vercel.app/api/consumer/${id}`)
 
         dispatch({
             type: CONSUMER_PRODUCT_DETAILS_SUCCESS,
@@ -75,7 +75,7 @@ export const deleteConsumerProduct = (id) => async (dispatch, getState) => {
             },
         }
 
-        await axios.delete(`/api/consumer/${id}`, config)
+        await axios.delete(`https://agrohub-backend.vercel.app/api/consumer/${id}`, config)
 
         dispatch({
             type: CONSUMER_DELETE_SUCCESS,
@@ -103,7 +103,7 @@ export const createConsumer = (id) => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.post(`/api/consumer/`, {}, config)
+        const { data } = await axios.post(`https://agrohub-backend.vercel.app/api/consumer/`, {}, config)
 
         dispatch({
             type: CONSUMER_CREATE_SUCCESS,
@@ -133,7 +133,7 @@ export const updateConsumer = (consumer) => async (dispatch, getState) => {
             },
         }
 
-        const { data } = await axios.put(`/api/consumer/${consumer._id}`, consumer, config)
+        const { data } = await axios.put(`https://agrohub-backend.vercel.app/api/consumer/${consumer._id}`, consumer, config)
 
         dispatch({
             type: CONSUMER_UPDATE_SUCCESS,
@@ -173,7 +173,7 @@ export const createProductReview = (productId, review) => async (
         },
       }
   
-      await axios.post(`/api/consumer/${productId}/reviews`, review, config)
+      await axios.post(`https://agrohub-backend.vercel.app/api/consumer/${productId}/reviews`, review, config)
   
       dispatch({
         type: PRODUCT_CREATE_REVIEW_SUCCESS,

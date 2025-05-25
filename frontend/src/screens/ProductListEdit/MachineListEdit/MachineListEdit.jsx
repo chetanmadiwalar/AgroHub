@@ -240,25 +240,41 @@ const SeedListEdit  = ({ match }) => {
     }
 
     const uploadFileHandler = async (e) => {
-        const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append('image', file);
-        setUploading(true);
+    const file = e.target.files[0];
+    if (!file) return;
 
-        try {
-            const config = {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            };
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'agrohub_preset'); // Replace with your actual preset
+    setUploading(true);
 
-            const { data } = await axios.post('http://localhost:5000/api/upload', formData, config);
+    try {
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: (progressEvent) => {
+                console.log(
+                    'Upload Progress: ' +
+                    Math.round((progressEvent.loaded * 100) / progressEvent.total) +
+                    '%'
+                );
+            }
+        };
 
-            setImage(data.image);
-            setUploading(false);
-        } catch (error) {
-            console.error('Image Upload Error:', error.response?.data?.message || error.message);
-            setUploading(false);
-        }
-    };
+        const { data } = await axios.post(
+            'https://api.cloudinary.com/v1_1/djfpd3gha/image/upload', // Replace YOUR_CLOUD_NAME
+            formData,
+            config
+        );
+
+        setImage(data.secure_url);
+        setUploading(false);
+    } catch (error) {
+        console.error('Upload Error:', error);
+        setUploading(false);
+    }
+};
 
     useEffect(() => {
         if (!userInfo) {
@@ -322,32 +338,51 @@ const SeedListEdit  = ({ match }) => {
                                 </FormGroup>
 
                                 <FormGroup controlId="image">
-                                    <Form.Label>Image</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter image url"
-                                        value={image}
-                                        onChange={(e) => setImage(e.target.value)}
-                                    />
-                                    <FileInputWrapper>
-                                        <Form.Control
-                                            type="file"
-                                            label="Choose File"
-                                            custom
-                                            onChange={uploadFileHandler}
-                                            style={{ marginTop: '10px' }}
-                                        />
-                                    </FileInputWrapper>
-                                    {uploading && <Loader />}
-                                    {image && (
-                                        <ImagePreview>
-                                            <img 
-                                                src={image} 
-                                                alt="Preview" 
-                                            />
-                                        </ImagePreview>
-                                    )}
-                                </FormGroup>
+                                  <Form.Label>Image</Form.Label>
+                                  <Form.Control
+                                      type="text"
+                                      placeholder="Enter image URL"
+                                      value={image}
+                                      onChange={(e) => setImage(e.target.value)}
+                                  />
+                                  <Form.Text className="text-muted">
+                                      Or upload an image file
+                                  </Form.Text>
+                                  
+                                  <div className="mt-2">
+                                      <Form.File
+                                          id="image-file"
+                                          label="Choose File"
+                                          custom
+                                          onChange={uploadFileHandler}
+                                      />
+                                  </div>
+                                  
+                                  {uploading && <Loader />}
+                                  
+                                  {image && (
+                                      <div className="mt-3 text-center">
+                                          <img 
+                                              src={image} 
+                                              alt="Product Preview" 
+                                              className="img-fluid rounded"
+                                              style={{
+                                                  maxHeight: '200px',
+                                                  border: '1px solid #dee2e6'
+                                              }}
+                                          />
+                                          <div className="mt-2">
+                                              <Button 
+                                                  variant="danger" 
+                                                  size="sm" 
+                                                  onClick={() => setImage('')}
+                                              >
+                                                  Remove Image
+                                              </Button>
+                                          </div>
+                                      </div>
+                                  )}
+                              </FormGroup>
 
                                 <FormGroup controlId='price'>
                                     <Form.Label>Price</Form.Label>

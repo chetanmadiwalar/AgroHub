@@ -74,7 +74,7 @@ const SupplierScreenWrapper = styled.div`
 `;
 
 const StyledContainer = styled(Container)`
-  padding-top: 70px;
+  padding-top: 100px;
   padding-bottom: 40px;
 `;
 
